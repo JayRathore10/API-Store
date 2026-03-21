@@ -1,11 +1,7 @@
-const app = require('./app');
-const connectDB = require('./configs/db.config');
+import { app } from "./app.js";
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Connect DB locally 
-connectDB();
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT , ()=>{
+  console.log(`http://localhost:${PORT}`);
 });

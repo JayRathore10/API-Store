@@ -1,8 +1,7 @@
-const express = require('express');
-const app = express();
+import express from 'express';
 
-app.get('/', (req, res) => {
-  res.send('Hi, Jexts here!');
-});
+export const app = express();
 
-module.exports = app;
+app.get("/" , (req  , res)=>{
+    res.send("API store");
+})
