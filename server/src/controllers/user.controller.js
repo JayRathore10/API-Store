@@ -1,12 +1,13 @@
 import User from '../models/user.model.js';
 import axios from 'axios';
+import bcrypt from 'bcryptjs'
 
 // Options for cookie
 const cookieOptions = {
   expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none',
+ sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+secure: process.env.NODE_ENV === 'production',
 };
 
 // Register user
@@ -23,7 +24,10 @@ export const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    const user = await User.create({ name, email, password });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await User.create({ name, email, password: hashedPassword });
     const token = user.generateToken();
 
     res.status(201).cookie('token', token, cookieOptions).json({
@@ -40,18 +44,18 @@ export const register = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 // Login user
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
