@@ -583,3 +583,265 @@ Deletes an API. Only the API owner can delete it.
 
 ---
 
+# Endpoint Management
+
+Base Route:
+
+```
+/api/v1/endpoints
+```
+
+---
+
+## 1. Create Endpoint
+
+### Endpoint
+
+```
+POST /api/v1/endpoints
+```
+
+### Auth Required
+
+Yes (JWT)
+
+### Description
+
+Creates a new endpoint under a specific API. Only the API owner can create endpoints.
+
+### Request Body
+
+```json
+{
+  "apiId": "api_id",
+  "method": "GET",
+  "path": "/weather",
+  "description": "Get weather data",
+  "requestBody": {},
+  "responseExample": {
+    "temperature": "25°C",
+    "condition": "Sunny"
+  }
+}
+```
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Endpoint created successfully",
+  "data": {
+    "_id": "endpoint_id",
+    "apiId": "api_id",
+    "method": "GET",
+    "path": "/weather",
+    "description": "Get weather data",
+    "requestBody": {},
+    "responseExample": {
+      "temperature": "25°C",
+      "condition": "Sunny"
+    }
+  }
+}
+```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "message": "API not found"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Not authorized"
+}
+```
+
+---
+
+## 2. Get Endpoints By API
+
+### Endpoint
+
+```
+GET /api/v1/endpoints/api/:apiId
+```
+
+### Auth Required
+
+No
+
+### Description
+
+Fetches all endpoints belonging to a specific API.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Endpoints fetched successfully",
+  "data": [
+    {
+      "_id": "endpoint_id",
+      "apiId": "api_id",
+      "method": "GET",
+      "path": "/weather",
+      "description": "Get weather data"
+    }
+  ]
+}
+```
+
+---
+
+## 3. Get Endpoint By ID
+
+### Endpoint
+
+```
+GET /api/v1/endpoints/:id
+```
+
+### Auth Required
+
+No
+
+### Description
+
+Fetches a single endpoint by its ID.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Endpoint fetched successfully",
+  "data": {
+    "_id": "endpoint_id",
+    "apiId": "api_id",
+    "method": "GET",
+    "path": "/weather",
+    "description": "Get weather data",
+    "requestBody": {},
+    "responseExample": {}
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "message": "Endpoint not found"
+}
+```
+
+---
+
+## 4. Update Endpoint
+
+### Endpoint
+
+```
+PUT /api/v1/endpoints/:id
+```
+
+### Auth Required
+
+Yes (JWT)
+
+### Description
+
+Updates an endpoint. Only the API owner can update it.
+
+### Request Body
+
+```json
+{
+  "description": "Updated description",
+  "method": "POST"
+}
+```
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Endpoint updated successfully",
+  "data": {
+    "_id": "endpoint_id",
+    "description": "Updated description",
+    "method": "POST"
+  }
+}
+```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "message": "Endpoint not found"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Not authorized"
+}
+```
+
+---
+
+## 5. Delete Endpoint
+
+### Endpoint
+
+```
+DELETE /api/v1/endpoints/:id
+```
+
+### Auth Required
+
+Yes (JWT)
+
+### Description
+
+Deletes an endpoint. Only the API owner can delete it.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Endpoint deleted successfully"
+}
+```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "message": "Endpoint not found"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Not authorized"
+}
+```
+
+---
+
