@@ -7,7 +7,7 @@ import {
   deleteAPI,
 } from "../controllers/api.controller.js";
 
-import { isAuthenticated } from './../middlewares/auth.middleware.js';
+import { isAuthenticated } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
