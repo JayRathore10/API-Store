@@ -18,11 +18,10 @@ The backend is built using Node.js, Express.js, and MongoDB.
 
 ```
 server/
-│
 ├── src/
 │   ├── config/            # Database and application configuration
 │   ├── controllers/       # Business logic and request handlers
-│   ├── middlewares/       # Authentication and error handling
+│   ├── middleware/        # Authentication and error handling
 │   ├── models/            # Mongoose models (User, API, Endpoint)
 │   ├── routes/            # API route definitions
 │   ├── utils/             # Helper and utility functions
@@ -31,6 +30,8 @@ server/
 │
 ├── .env                   # Environment variables
 ├── .gitignore
+├── Dockerfile
+├── .dockerignore
 ├── package.json
 └── README.md
 ```
@@ -97,6 +98,56 @@ http://localhost:3000
 ```
 
 ---
+
+# .gitignore
+
+```
+node_modules/
+.env
+dist/
+build/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+coverage/
+```
+
+---
+
+# Dockerfile
+
+```dockerfile
+FROM node:18
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+```
+
+---
+
+# .dockerignore
+
+```
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env
+```
 
 ## API Base URL
 
