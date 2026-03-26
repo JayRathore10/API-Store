@@ -337,3 +337,249 @@ Returns logged-in user details.
 - Clean MVC architecture used  
 
 ---
+
+# API Management
+
+Base Route:
+
+```
+/api/v1/apis
+```
+
+---
+
+## 1. Create API
+
+### Endpoint
+
+```
+POST /api/v1/apis
+```
+
+### Auth Required
+
+Yes (JWT)
+
+### Description
+
+Creates a new API entry. The logged-in user is set as the author.
+
+### Request Body
+
+```json
+{
+  "title": "Weather API",
+  "description": "Provides weather data",
+  "baseUrl": "https://api.weather.com",
+  "category": "Weather"
+}
+```
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "API created successfully",
+  "data": {
+    "_id": "api_id",
+    "title": "Weather API",
+    "description": "Provides weather data",
+    "baseUrl": "https://api.weather.com",
+    "category": "Weather",
+    "author": "user_id"
+  }
+}
+```
+
+---
+
+## 2. Get All APIs
+
+### Endpoint
+
+```
+GET /api/v1/apis
+```
+
+### Auth Required
+
+No
+
+### Description
+
+Fetches all available APIs with author details.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "APIs fetched successfully",
+  "data": [
+    {
+      "_id": "api_id",
+      "title": "Weather API",
+      "description": "Provides weather data",
+      "baseUrl": "https://api.weather.com",
+      "category": "Weather",
+      "author": {
+        "_id": "user_id",
+        "name": "Jay Rathore",
+        "email": "jay@example.com"
+      }
+    }
+  ]
+}
+```
+
+---
+
+## 3. Get API By ID
+
+### Endpoint
+
+```
+GET /api/v1/apis/:id
+```
+
+### Auth Required
+
+No
+
+### Description
+
+Fetches a single API by its ID.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "API fetched successfully",
+  "data": {
+    "_id": "api_id",
+    "title": "Weather API",
+    "description": "Provides weather data",
+    "baseUrl": "https://api.weather.com",
+    "category": "Weather",
+    "author": {
+      "_id": "user_id",
+      "name": "Jay Rathore",
+      "email": "jay@example.com"
+    }
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "message": "API not found"
+}
+```
+
+---
+
+## 4. Update API
+
+### Endpoint
+
+```
+PUT /api/v1/apis/:id
+```
+
+### Auth Required
+
+Yes (JWT)
+
+### Description
+
+Updates an existing API. Only the API owner can update it.
+
+### Request Body
+
+```json
+{
+  "title": "Updated API Name",
+  "description": "Updated description"
+}
+```
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "API updated successfully",
+  "data": {
+    "_id": "api_id",
+    "title": "Updated API Name",
+    "description": "Updated description"
+  }
+}
+```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "message": "API not found"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Not authorized"
+}
+```
+
+---
+
+## 5. Delete API
+
+### Endpoint
+
+```
+DELETE /api/v1/apis/:id
+```
+
+### Auth Required
+
+Yes (JWT)
+
+### Description
+
+Deletes an API. Only the API owner can delete it.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "API deleted successfully"
+}
+```
+
+### Error Responses
+
+```json
+{
+  "success": false,
+  "message": "API not found"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Not authorized"
+}
+```
+
+---
+
