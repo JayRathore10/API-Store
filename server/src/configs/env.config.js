@@ -6,7 +6,7 @@ export const {
   MONGODB_URI , 
   NODE_ENV, 
   JWT_SECRET , 
-  JWT_EXPI , 
+  JWT_EXPI ,  
   PORT , 
   GITHUB_CLIENT_ID   , 
   GITHUB_CLIENT_SECRET ,
