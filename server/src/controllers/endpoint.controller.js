@@ -1,19 +1,23 @@
 import Endpoint from "../models/endPoint.model.js";
 import API from "../models/api.model.js";
-import { successResponse, errorResponse } from "../utils/responseHandler.js";
+import { successResponse } from "../utils/responseHandler.js";
 
-export const createEndpoint = async (req, res) => {
+export const createEndpoint = async (req, res, next) => {
   try {
     const { apiId, method, path, description, requestBody, responseExample } =
       req.body;
 
     const api = await API.findById(apiId);
     if (!api) {
-      return errorResponse(res, { status: 404, message: "API not found" });
+      const err = new Error("API not found");
+      err.status = 404;
+      return next(err);
     }
 
     if (api.author.toString() !== req.user._id.toString()) {
-      return errorResponse(res, { status: 403, message: "Not authorized" });
+      const err = new Error("Not authorized");
+      err.status = 403;
+      return next(err);
     }
 
     const endpoint = await Endpoint.create({
@@ -31,11 +35,11 @@ export const createEndpoint = async (req, res) => {
       data: endpoint,
     });
   } catch (error) {
-    return errorResponse(res, { message: error.message });
+    next(error);
   }
 };
 
-export const getEndpointsByApi = async (req, res) => {
+export const getEndpointsByApi = async (req, res, next) => {
   try {
     const endpoints = await Endpoint.find({ apiId: req.params.apiId });
 
@@ -44,19 +48,18 @@ export const getEndpointsByApi = async (req, res) => {
       data: endpoints,
     });
   } catch (error) {
-    return errorResponse(res, { message: error.message });
+    next(error);
   }
 };
 
-export const getEndpointById = async (req, res) => {
+export const getEndpointById = async (req, res, next) => {
   try {
     const endpoint = await Endpoint.findById(req.params.id);
 
     if (!endpoint) {
-      return errorResponse(res, {
-        status: 404,
-        message: "Endpoint not found",
-      });
+      const err = new Error("Endpoint not found");
+      err.status = 404;
+      return next(err);
     }
 
     return successResponse(res, {
@@ -64,25 +67,26 @@ export const getEndpointById = async (req, res) => {
       data: endpoint,
     });
   } catch (error) {
-    return errorResponse(res, { message: error.message });
+    next(error);
   }
 };
 
-export const updateEndpoint = async (req, res) => {
+export const updateEndpoint = async (req, res, next) => {
   try {
     let endpoint = await Endpoint.findById(req.params.id);
 
     if (!endpoint) {
-      return errorResponse(res, {
-        status: 404,
-        message: "Endpoint not found",
-      });
+      const err = new Error("Endpoint not found");
+      err.status = 404;
+      return next(err);
     }
 
     const api = await API.findById(endpoint.apiId);
 
     if (api.author.toString() !== req.user._id.toString()) {
-      return errorResponse(res, { status: 403, message: "Not authorized" });
+      const err = new Error("Not authorized");
+      err.status = 403;
+      return next(err);
     }
 
     endpoint = await Endpoint.findByIdAndUpdate(req.params.id, req.body, {
@@ -95,25 +99,26 @@ export const updateEndpoint = async (req, res) => {
       data: endpoint,
     });
   } catch (error) {
-    return errorResponse(res, { message: error.message });
+    next(error);
   }
 };
 
-export const deleteEndpoint = async (req, res) => {
+export const deleteEndpoint = async (req, res, next) => {
   try {
     const endpoint = await Endpoint.findById(req.params.id);
 
     if (!endpoint) {
-      return errorResponse(res, {
-        status: 404,
-        message: "Endpoint not found",
-      });
+      const err = new Error("Endpoint not found");
+      err.status = 404;
+      return next(err);
     }
 
     const api = await API.findById(endpoint.apiId);
 
     if (api.author.toString() !== req.user._id.toString()) {
-      return errorResponse(res, { status: 403, message: "Not authorized" });
+      const err = new Error("Not authorized");
+      err.status = 403;
+      return next(err);
     }
 
     await endpoint.deleteOne();
@@ -122,6 +127,6 @@ export const deleteEndpoint = async (req, res) => {
       message: "Endpoint deleted successfully",
     });
   } catch (error) {
-    return errorResponse(res, { message: error.message });
+    next(error);
   }
 };
