@@ -1,28 +1,32 @@
 import User from '../models/user.model.js';
 import axios from 'axios';
-import bcrypt from 'bcrypt'
-import { GITHUB_CLIENT_ID , GITHUB_REDIRECT_URI} from '../configs/env.config.js';
+import bcrypt from 'bcrypt';
+import { GITHUB_CLIENT_ID, GITHUB_REDIRECT_URI } from '../configs/env.config.js';
 
 // Options for cookie
 const cookieOptions = {
-  expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+  expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   httpOnly: true,
- sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: process.env.NODE_ENV === 'production',
 };
 
 // Register user
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
+      const err = new Error('All fields are required');
+      err.status = 400;
+      return next(err);
     }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ success: false, message: 'User already exists' });
+      const err = new Error('User already exists');
+      err.status = 400;
+      return next(err);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -42,22 +46,27 @@ export const register = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 };
+
 // Login user
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      const err = new Error('Invalid credentials');
+      err.status = 401;
+      return next(err);
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      const err = new Error('Invalid credentials');
+      err.status = 401;
+      return next(err);
     }
 
     const token = user.generateToken();
@@ -73,16 +82,19 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 };
 
 // Logout user
 export const logout = (req, res) => {
-  res.status(200).cookie('token', null, { ...cookieOptions, expires: new Date(0) }).json({
-    success: true,
-    message: 'Logged out successfully',
-  });
+  res
+    .status(200)
+    .cookie('token', null, { ...cookieOptions, expires: new Date(0) })
+    .json({
+      success: true,
+      message: 'Logged out successfully',
+    });
 };
 
 // GitHub Login (Initiate)
@@ -92,7 +104,7 @@ export const githubLogin = (req, res) => {
 };
 
 // GitHub Callback
-export const githubCallback = async (req, res) => {
+export const githubCallback = async (req, res, next) => {
   try {
     const { code } = req.query;
 
@@ -100,7 +112,6 @@ export const githubCallback = async (req, res) => {
       return res.redirect(`${process.env.CLIENT_URL}/login?error=no_code`);
     }
 
-    // Exchange code for token
     const tokenResponse = await axios.post(
       'https://github.com/login/oauth/access_token',
       {
@@ -113,29 +124,28 @@ export const githubCallback = async (req, res) => {
 
     const accessToken = tokenResponse.data.access_token;
 
-    // Get GitHub user profile
     const userResponse = await axios.get('https://api.github.com/user', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
     const githubUser = userResponse.data;
 
-    // Get user email (sometimes email is private)
     let email = githubUser.email;
     if (!email) {
       const emailsResponse = await axios.get('https://api.github.com/user/emails', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const primaryEmail = emailsResponse.data.find((e) => e.primary);
-      email = primaryEmail ? primaryEmail.email : `${githubUser.login}@github.com`;
+      email = primaryEmail
+        ? primaryEmail.email
+        : `${githubUser.login}@github.com`;
     }
 
-    // Check if user exists, if not create new
-    let user = await User.findOne({ 
-        $or: [
-            { githubId: githubUser.id.toString() }, 
-            { email: email }
-        ] 
+    let user = await User.findOne({
+      $or: [
+        { githubId: githubUser.id.toString() },
+        { email: email },
+      ],
     });
 
     if (!user) {
@@ -146,30 +156,34 @@ export const githubCallback = async (req, res) => {
         avatar: githubUser.avatar_url,
       });
     } else if (!user.githubId) {
-        // If user already registered with email, update their githubId
-        user.githubId = githubUser.id.toString();
-        if (!user.avatar) user.avatar = githubUser.avatar_url;
-        await user.save();
+      user.githubId = githubUser.id.toString();
+      if (!user.avatar) user.avatar = githubUser.avatar_url;
+      await user.save();
     }
 
     const token = user.generateToken();
 
-    // Redirect to client with token (or set cookie)
-    res.cookie('token', token, cookieOptions).redirect(`${process.env.CLIENT_URL}/dashboard`);
+    res
+      .cookie('token', token, cookieOptions)
+      .redirect(`${process.env.CLIENT_URL}/dashboard`);
   } catch (error) {
-    console.error('GitHub Auth Error:', error);
-    res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
+    next(error);
   }
 };
 
 // Get current user profile
-export const getProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('-password');
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-        
-        res.status(200).json({ success: true, user });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+export const getProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+
+    if (!user) {
+      const err = new Error('User not found');
+      err.status = 404;
+      return next(err);
     }
-}
+
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    next(error);
+  }
+};
