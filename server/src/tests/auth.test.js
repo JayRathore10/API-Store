@@ -11,6 +11,13 @@ jest.unstable_mockModule("../models/user.model.js", () => ({
   default: mockUser,
 }));
 
+jest.unstable_mockModule("axios", () => ({
+  default: {
+    post: jest.fn(),
+    get: jest.fn(),
+  },
+}));
+
 jest.unstable_mockModule("bcrypt", () => ({
   default: {
     genSalt: jest.fn(),
@@ -19,13 +26,26 @@ jest.unstable_mockModule("bcrypt", () => ({
   },
 }));
 
+jest.unstable_mockModule("../configs/env.config.js", () => ({
+  MONGODB_URI: "mock",
+  NODE_ENV: "test",
+  JWT_SECRET: "mock",
+  JWT_EXPI: "1d",
+  PORT: 5000,
+
+  GITHUB_CLIENT_ID: "test-client-id",
+  GITHUB_CLIENT_SECRET: "test-secret",
+  GITHUB_REDIRECT_URI: "http://localhost:3000/auth/github/callback",
+  CLIENT_URL: "http://localhost:3000",
+}));
+
 jest.unstable_mockModule("../utils/generateToken.js", () => ({
   default: jest.fn(() => "fake-token"),
 }));
 
 const bcrypt = (await import("bcrypt")).default;
 const { app } = await import("../app.js");
-
+const axios = await import("axios").default;
 
 describe("POST /api/v1/auth/register", () => {
   test("should return 400 when any field is missing", async () => {
@@ -196,4 +216,14 @@ describe("GET /api/v1/auth/github", () => {
     expect(res.headers.location).toContain("redirect_uri=");
     expect(res.headers.location).toContain("scope=user:email");
   });
+});
+
+describe("GET /api/v1/auth/github/callback", () => {
+  test("should redirect to login if code is missing", async () => {
+    const res = await request(app).get("/api/v1/auth/github/callback");
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain("/login?error=no_code");
+  });
+
 });
