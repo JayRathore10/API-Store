@@ -131,6 +131,26 @@ describe("POST /api/v1/auth/login", () => {
       })
 
     expect(res.status).toBe(401);
+  });
+
+  test("should return 200 when user login successfully" ,  async()=>{
+    mockUser.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue({
+        _id: "1",
+        email: "test@gmail.com",
+        name: "test",
+        password: "hashed-password",
+      }),
+    });
+    bcrypt.compare.mockResolvedValue(true);
+     const res = await request(app).
+      post("/api/v1/auth/login").
+      send({
+        email: "test@gmail.com",
+        password: "test"
+      })
+
+    expect(res.status).toBe(200);
   })
 
 })
