@@ -1,6 +1,6 @@
 import request from "supertest";
 import User from "../models/user.model.js";
-import { expect, jest } from "@jest/globals";
+import { describe, expect, jest } from "@jest/globals";
 
 const mockUser = {
   findOne: jest.fn(),
@@ -154,3 +154,22 @@ describe("POST /api/v1/auth/login", () => {
   })
 
 })
+
+describe("GET /api/v1/auth/logout", () => {
+  test("should logout user and clear token cookie", async () => {
+    const res = await request(app).get("/api/v1/auth/logout");
+
+    expect(res.status).toBe(200);
+
+    expect(res.body).toEqual({
+      success: true,
+      message: "Logged out successfully",
+    });
+
+    const cookies = res.headers["set-cookie"];
+
+    expect(cookies).toBeDefined();
+    expect(cookies[0]).toMatch("token=j%3Anull; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax");
+    expect(cookies[0]).toMatch(/Expires=/);
+  });
+});
