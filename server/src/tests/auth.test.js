@@ -86,6 +86,20 @@ describe("POST /api/v1/auth/login" , ()=>{
       });
 
     expect(res.status).toBe(400);
+  });
 
+
+  test("should return 401 when there is an error in finding user in database" , async()=>{
+    mockUser.findOne.mockResolvedValue(null);
+
+    const res = await request(app).
+      post("/api/v1/auth/login").
+      send({
+        email : "test" ,
+        email : "test@gmail.com"
+      })
+
+    expect(res.status).toBe(400);
   })
+
 })
