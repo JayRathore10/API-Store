@@ -19,7 +19,7 @@ export const register = async (req, res, next) => {
     if (!name || !email || !password) {
       const err = new Error('All fields are required');
       err.status = 400;
-      return next(err);
+      return next(err); 
     }
 
     const userExists = await User.findOne({ email });
