@@ -88,26 +88,26 @@ describe("POST /api/v1/auth/login", () => {
   test("return 400 when there is any field is missing", async () => {
     mockUser.findOne.mockResolvedValue(null);
 
-    const res = await request(app).
-      post("/api/v1/auth/login").
-      send({
+    const res = await request(app)
+      .post("/api/v1/auth/login")
+      .send({
         password: "test"
       });
 
     expect(res.status).toBe(400);
   });
 
-
   test("should return 401 when there is an error in finding user in database", async () => {
     mockUser.findOne.mockReturnValue({
       select: jest.fn().mockResolvedValue(null),
     });
-    const res = await request(app).
-      post("/api/v1/auth/login").
-      send({
+
+    const res = await request(app)
+      .post("/api/v1/auth/login")
+      .send({
         email: "test@gmail.com",
         password: "test"
-      })
+      });
 
     expect(res.status).toBe(401);
   });
@@ -121,19 +121,20 @@ describe("POST /api/v1/auth/login", () => {
         password: "hashed-password",
       }),
     });
+
     bcrypt.compare.mockResolvedValue(false);
 
-    const res = await request(app).
-      post("/api/v1/auth/login").
-      send({
+    const res = await request(app)
+      .post("/api/v1/auth/login")
+      .send({
         email: "test@gmail.com",
         password: "test"
-      })
+      });
 
     expect(res.status).toBe(401);
   });
 
-  test("should return 200 when user login successfully" ,  async()=>{
+  test("should return 200 when user login successfully", async () => {
     mockUser.findOne.mockReturnValue({
       select: jest.fn().mockResolvedValue({
         _id: "1",
@@ -142,18 +143,25 @@ describe("POST /api/v1/auth/login", () => {
         password: "hashed-password",
       }),
     });
+
     bcrypt.compare.mockResolvedValue(true);
-     const res = await request(app).
-      post("/api/v1/auth/login").
-      send({
+
+    const res = await request(app)
+      .post("/api/v1/auth/login")
+      .send({
         email: "test@gmail.com",
         password: "test"
-      })
+      });
 
     expect(res.status).toBe(200);
-  })
 
-})
+    const cookies = res.headers["set-cookie"];
+
+    expect(cookies).toBeDefined();
+    expect(cookies[0]).toMatch(/token=/);
+    expect(cookies[0]).toMatch(/HttpOnly/);
+  });
+});
 
 describe("GET /api/v1/auth/logout", () => {
   test("should logout user and clear token cookie", async () => {
