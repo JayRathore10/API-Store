@@ -63,8 +63,6 @@ describe("POST /api/v1/auth/register", () => {
       generateToken: jest.fn().mockReturnValue("fake-token"),
     });
 
-
-
     const res = await request(app).
       post("/api/v1/auth/register").
       send({
@@ -74,7 +72,20 @@ describe("POST /api/v1/auth/register", () => {
       });
 
     expect(res.status).toBe(201);
+  })
+})
+
+describe("POST /api/v1/auth/login" , ()=>{
+  test("return 400 when there is any field is missing" , async()=>{
+    mockUser.findOne.mockResolvedValue(null);
+
+    const res = await request(app).
+      post("/api/v1/auth/login").
+      send({
+        password : "test"
+      });
+
+    expect(res.status).toBe(400);
 
   })
-
 })
