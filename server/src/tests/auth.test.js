@@ -181,3 +181,19 @@ describe("GET /api/v1/auth/logout", () => {
     expect(cookies[0]).toMatch(/Expires=/);
   });
 });
+
+describe("GET /api/v1/auth/github", () => {
+  test("should redirect to github oauth url", async () => {
+    const res = await request(app).get("/api/v1/auth/github");
+
+    expect(res.status).toBe(302);
+
+    expect(res.headers.location).toMatch(
+      /https:\/\/github\.com\/login\/oauth\/authorize/
+    );
+
+    expect(res.headers.location).toContain("client_id=");
+    expect(res.headers.location).toContain("redirect_uri=");
+    expect(res.headers.location).toContain("scope=user:email");
+  });
+});
