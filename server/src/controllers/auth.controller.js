@@ -2,6 +2,7 @@ import User from '../models/user.model.js';
 import axios from 'axios';
 import bcrypt from 'bcrypt';
 import { GITHUB_CLIENT_ID, GITHUB_REDIRECT_URI } from '../configs/env.config.js';
+import generateToken from '../utils/generateToken.js';
 
 // Options for cookie
 const cookieOptions = {
@@ -33,7 +34,7 @@ export const register = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({ name, email, password: hashedPassword });
-    const token = user.generateToken();
+    const token = generateToken(user._id);
 
     res.status(201).cookie('token', token, cookieOptions).json({
       success: true,
@@ -75,7 +76,7 @@ export const login = async (req, res, next) => {
       return next(err);
     }
 
-    const token = user.generateToken();
+    const token = generateToken(user._id);
 
     res.status(200).cookie('token', token, cookieOptions).json({
       success: true,
@@ -167,7 +168,7 @@ export const githubCallback = async (req, res, next) => {
       await user.save();
     }
 
-    const token = user.generateToken();
+    const token = generateToken(user._id);
 
     res
       .cookie('token', token, cookieOptions)
