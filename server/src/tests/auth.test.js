@@ -7,16 +7,25 @@ const mockUser = {
   create: jest.fn(),
 };
 
-const mockBcrypt = {
-  genSalt: jest.fn(),
-  hash: jest.fn()
-};
-
 jest.unstable_mockModule("../models/user.model.js", () => ({
   default: mockUser,
 }));
 
+jest.unstable_mockModule("bcrypt", () => ({
+  default: {
+    genSalt: jest.fn(),
+    hash: jest.fn(),
+    compare: jest.fn(),
+  },
+}));
+
+jest.unstable_mockModule("../utils/generateToken.js", () => ({
+  default: jest.fn(() => "fake-token"),
+}));
+
+const bcrypt = (await import("bcrypt")).default;
 const { app } = await import("../app.js");
+
 
 describe("POST /api/v1/auth/register", () => {
   test("should return 400 when any field is missing", async () => {
@@ -53,13 +62,13 @@ describe("POST /api/v1/auth/register", () => {
   test("should return 201 when user is created successfully", async () => {
     mockUser.findOne.mockResolvedValue(null);
 
-    mockBcrypt.genSalt.mockResolvedValue("*");
-    mockBcrypt.hash.mockResolvedValue("123**");
+    bcrypt.genSalt.mockResolvedValue("*");
+    bcrypt.hash.mockResolvedValue("123**");
 
     mockUser.create.mockResolvedValue({
       name: "test",
       email: "test@gmail.com",
-      password: "123**" , 
+      password: "123**",
       generateToken: jest.fn().mockReturnValue("fake-token"),
     });
 
@@ -75,31 +84,53 @@ describe("POST /api/v1/auth/register", () => {
   })
 })
 
-describe("POST /api/v1/auth/login" , ()=>{
-  test("return 400 when there is any field is missing" , async()=>{
+describe("POST /api/v1/auth/login", () => {
+  test("return 400 when there is any field is missing", async () => {
     mockUser.findOne.mockResolvedValue(null);
 
     const res = await request(app).
       post("/api/v1/auth/login").
       send({
-        password : "test"
+        password: "test"
       });
 
     expect(res.status).toBe(400);
   });
 
 
-  test("should return 401 when there is an error in finding user in database" , async()=>{
-    mockUser.findOne.mockResolvedValue(null);
+  test("should return 401 when there is an error in finding user in database", async () => {
+    mockUser.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(null),
+    });
+    const res = await request(app).
+      post("/api/v1/auth/login").
+      send({
+        email: "test@gmail.com",
+        password: "test"
+      })
+
+    expect(res.status).toBe(401);
+  });
+
+  test("should return 401 when the password in database is not matched to request password", async () => {
+    mockUser.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue({
+        _id: "1",
+        email: "test@gmail.com",
+        name: "test",
+        password: "hashed-password",
+      }),
+    });
+    bcrypt.compare.mockResolvedValue(false);
 
     const res = await request(app).
       post("/api/v1/auth/login").
       send({
-        email : "test" ,
-        email : "test@gmail.com"
+        email: "test@gmail.com",
+        password: "test"
       })
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
   })
 
 })
