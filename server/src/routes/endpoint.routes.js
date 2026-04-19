@@ -7,7 +7,8 @@ import {
   deleteEndpoint,
 } from "../controllers/endPoint.controller.js";
 
-import { isAuthenticated } from "../middleware/auth.middleware.js";
+// import { isAuthenticated } from "../middleware/auth.middleware.js";
+import {isAuthenticated} from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 

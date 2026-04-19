@@ -1,6 +1,6 @@
 import Endpoint from "../models/endPoint.model.js";
 import API from "../models/api.model.js";
-import { successResponse } from "../utils/responseHandler.js";
+import { successResponse } from "../utils/response.handler.js";
 
 export const createEndpoint = async (req, res, next) => {
   try {
