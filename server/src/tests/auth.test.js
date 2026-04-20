@@ -16,7 +16,7 @@ jest.unstable_mockModule("axios", () => ({
     post: jest.fn(),
     get: jest.fn(),
   },
-}));
+})); 
 
 jest.unstable_mockModule("bcrypt", () => ({
   default: {
