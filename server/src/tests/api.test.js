@@ -6,8 +6,8 @@ import { populate } from "dotenv";
 const mockAPI = {
   find: jest.fn(),
   findOne: jest.fn(),
-  create: jest.fn() , 
-  findById  : jest.fn()
+  create: jest.fn(),
+  findById: jest.fn()
 };
 
 jest.unstable_mockModule("../models/api.model.js", () => ({
@@ -39,16 +39,29 @@ describe("GET /api/v1/apis", () => {
   });
 });
 
-describe("GET /api/v1/apis/:id", ()=>{
-  test("should return 404 when the api with the id is not present in database" , async()=>{
+describe("GET /api/v1/apis/:id", () => {
+  test("should return 404 when the api with the id is not present in database", async () => {
     mockAPI.findById.mockReturnValue({
-      populate : jest.fn().mockResolvedValue(null)
+      populate: jest.fn().mockResolvedValue(null)
     });
 
-    const res = await  request(app).
+    const res = await request(app).
       get("/api/v1/apis/124");
 
     expect(res.status).toBe(404);
+  });
 
-  })
+  test("should return 200 when the api with id successfully found in database", async () => {
+    mockAPI.findById.mockReturnValue({
+      populate: jest.fn().mockResolvedValue({
+        author : "test"  ,  
+        email : "test@123"
+      })
+    });
+
+    const res = await request(app).
+      get("/api/v1/apis/1234");
+
+    expect(res.status).toBe(200);
+  });
 })
