@@ -6,6 +6,7 @@ import userRoutes from './routes/user.routes.js';
 import authRouter from './routes/auth.routes.js';
 import apiRouter from "./routes/api.routes.js";
 import endpointRouter from "./routes/endPoint.routes.js";
+import { errorMiddleware } from './middlewares/error.middleware.js';
 
 export const app = express();
 
@@ -28,3 +29,7 @@ app.use("/api/v1/endpoints", endpointRouter);
 app.get("/" , (req  , res)=>{
     res.send("API store backend is running!");
 });
+
+// Error Middleware 
+// global error handling 
+app.use(errorMiddleware);
