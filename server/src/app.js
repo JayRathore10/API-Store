@@ -32,4 +32,4 @@ app.get("/" , (req  , res)=>{
 
 // Error Middleware 
 // global error handling 
-// app.use(errorMiddleware);
+app.use(errorMiddleware);
